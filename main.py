@@ -2,6 +2,7 @@ import os
 import shutil
 from dotenv import load_dotenv
 from fastapi import FastAPI, Form, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 
 from llama_index.core import (
     VectorStoreIndex, 
@@ -71,6 +72,14 @@ def rebuild_index():
 # --- 3. API IMPLEMENTATION ---
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.post("/chat")
 async def chat(
     message: str = Form(...),
@@ -106,6 +115,14 @@ async def reset_memory():
     """Endpoint to manually clear the conversation history."""
     memory.reset()
     return {"status": "Chat history cleared."}
+
+@app.post("/test")
+async def test(
+    message: str = Form(...),
+    file: UploadFile = File(None)
+):
+    return {"message": message, "file": file}
+
 
 if __name__ == "__main__":
     import uvicorn
